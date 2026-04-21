@@ -1,0 +1,15 @@
+.venv/
+__pycache__/
+*.pyc
+raw/
+normalized/
+chunks/
+ner/
+reports/
+logs/
+*.db
+*.db-shm
+*.db-wal
+.pytest_cache/
+.ruff_cache/
+.DS_Store

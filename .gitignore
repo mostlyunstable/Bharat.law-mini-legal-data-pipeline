@@ -1,0 +1,22 @@
+.venv/
+__pycache__/
+*.pyc
+
+# Generated pipeline outputs
+raw/
+normalized/
+chunks/
+ner/
+reports/
+crawl_index.jsonl
+normalized_index.jsonl
+
+# Local copies of provided evaluation data (avoid pushing)
+data/gold_ner.jsonl
+data/golden_ner.jsonl
+data/*gold*ner*.jsonl
+
+# Temp / editor
+.DS_Store
+.pytest_cache/
+.ruff_cache/
