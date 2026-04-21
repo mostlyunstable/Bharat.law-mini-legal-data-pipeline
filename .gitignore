@@ -6,7 +6,6 @@ __pycache__/
 raw/
 normalized/
 chunks/
-ner/
 reports/
 crawl_index.jsonl
 normalized_index.jsonl
@@ -20,3 +19,6 @@ data/*gold*ner*.jsonl
 .DS_Store
 .pytest_cache/
 .ruff_cache/
+ner/*.jsonl
+ner/*.json
+ner/__pycache__/
