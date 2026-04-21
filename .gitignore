@@ -10,15 +10,20 @@ reports/
 crawl_index.jsonl
 normalized_index.jsonl
 
+# NER generated outputs only (not source code)
+ner/annotations.jsonl
+ner/pred_gold_ner.jsonl
+
 # Local copies of provided evaluation data (avoid pushing)
 data/gold_ner.jsonl
 data/golden_ner.jsonl
 data/*gold*ner*.jsonl
 
 # Temp / editor
-.DS_Store
+logs/
+*.db
+*.db-shm
+*.db-wal
 .pytest_cache/
 .ruff_cache/
-ner/*.jsonl
-ner/*.json
-ner/__pycache__/
+.DS_Store
