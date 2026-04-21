@@ -9,7 +9,7 @@ from typing import Any
 
 
 def _norm_text(s: str) -> str:
-    return re.sub(r"\\s+", " ", s.strip()).lower()
+    return re.sub(r"\s+", " ", s.strip()).lower()
 
 
 def load_gold(path: Path) -> list[dict[str, Any]]:
