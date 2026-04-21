@@ -1,11 +1,8 @@
 from __future__ import annotations
-
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
-
 from bs4 import BeautifulSoup
-
 from parsers.html_to_md import html_to_markdownish
 from utils import append_jsonl, detect_language, read_jsonl, url_to_hash, write_text
 
@@ -24,7 +21,6 @@ def _extract_title_from_html(html: str) -> str | None:
 def _extract_main_html(html: str) -> str:
     try:
         from readability import Document  # type: ignore
-
         return Document(html).summary(html_partial=True)
     except Exception:
         return html
@@ -44,14 +40,28 @@ def _normalize_html(url: str, html: str, config: NormalizeConfig) -> tuple[str, 
 
 
 def _normalize_pdf(url: str, pdf_path: Path, config: NormalizeConfig) -> tuple[str, str]:
-    from pypdf import PdfReader
+    import fitz  # PyMuPDF
 
-    reader = PdfReader(str(pdf_path))
-    title = (reader.metadata.title if reader.metadata else None) or url
-    parts: list[str] = [f"# {title}", f"\nSource: {url}\n"] if config.include_source_header else [f"# {title}\n"]
-    for i, page in enumerate(reader.pages, start=1):
-        text = page.extract_text() or ""
-        parts.append(f"## Page {i}\n\n{text.strip()}\n")
+    doc = fitz.open(str(pdf_path))
+
+    # Extract title from metadata, fall back to URL
+    meta = doc.metadata or {}
+    title = (meta.get("title") or "").strip() or url
+
+    parts: list[str]
+    if config.include_source_header:
+        parts = [f"# {title}", f"\nSource: {url}\n"]
+    else:
+        parts = [f"# {title}\n"]
+
+    for i, page in enumerate(doc, start=1):
+        # PyMuPDF gives much better text extraction than pypdf
+        # sort=True preserves reading order (left-to-right, top-to-bottom)
+        text = page.get_text("text", sort=True).strip()
+        if text:
+            parts.append(f"## Page {i}\n\n{text}\n")
+
+    doc.close()
     return title, "\n\n".join(parts).strip() + "\n"
 
 
@@ -72,8 +82,8 @@ def normalize_all(project_root: Path, config: NormalizeConfig) -> dict[str, Any]
             continue
         raw_path = project_root / raw_rel
         url_hash = url_to_hash(url)
-
         source_type = "pdf" if raw_path.suffix.lower() == ".pdf" else "html"
+
         try:
             if source_type == "pdf":
                 title, md = _normalize_pdf(url, raw_path, config)
@@ -86,7 +96,6 @@ def normalize_all(project_root: Path, config: NormalizeConfig) -> dict[str, Any]
         out_path = normalized_dir / f"{url_hash}.md"
         write_text(out_path, md)
         lang = detect_language(md[:4000])
-
         append_jsonl(
             normalized_index,
             {
